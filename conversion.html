@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversion | LeadReport</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
+    <link rel="stylesheet" href="./css/components.css">
+    <style>
+        .sidebar {
+            width: 250px;
+            transition: all 0.3s;
+            height: 100vh;
+            position: fixed;
+            z-index: 50;
+        }
+        .main-content {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900">
+    <!-- Sidebar -->
+    <div class="sidebar bg-white dark:bg-gray-800 shadow-lg">
+        <div class="p-4 border-b dark:border-gray-700">
+            <h1 class="text-xl font-bold flex items-center gap-2 dark:text-white">
+                <i class="fas fa-chart-line text-blue-600"></i>
+                <span>LeadReport</span>
+            </h1>
+        </div>
+        <nav class="p-2">
+            <a href="index.html" class="nav-item flex items-center gap-3 p-3 rounded-lg dark:text-gray-300 dark:hover:bg-gray-700">
+                <i class="fas fa-home w-6 text-center"></i>
+                <span>Dashboard</span>
+            </a>
+            <div class="mt-auto border-t dark:border-gray-700 pt-2 space-y-1">
+                <button id="themeToggle" class="w-full flex items-center gap-3 p-3 rounded-lg text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <i class="fas fa-moon w-6 text-center"></i>
+                    <span>Dark Mode</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="p-6">
+            <div class="flex items-center gap-4 mb-6">
+                <button onclick="window.history.back()" 
+                        class="back-button flex items-center gap-2 px-3 py-1 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back</span>
+                </button>
+                <h2 class="text-2xl font-bold dark:text-white">CONVERSION LEAD</h2>
+            </div>
+            
+            <!-- Tabel Conversion -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-gray-700 overflow-hidden">
+                <div class="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-white">REALTIME TODAY</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-100 dark:bg-gray-700">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">ID</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">NETWORK</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">COUNTRY</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">TRAFFIC</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 dark:text-gray-200">EARNING</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">CUNGCUNGPRUT</td>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">iMonetizeit</td>
+                                <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">United Kingdom</td>
+                                <td class="px-4 py-3 text-sm text-blue-600 dark:text-blue-400 font-medium">WAP</td>
+                                <td class="px-4 py-3 text-sm text-green-600 dark:text-green-400 font-medium">$921</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">CUNGCUNGPRUT</td>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">iMonetizeit</td>
+                                <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">United Kingdom</td>
+                                <td class="px-4 py-3 text-sm text-blue-600 dark:text-blue-400 font-medium">WAP</td>
+                                <td class="px-4 py-3 text-sm text-green-600 dark:text-green-400 font-medium">$921</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">CUNGCUNGPRUT</td>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">iMonetizeit</td>
+                                <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Canada</td>
+                                <td class="px-4 py-3 text-sm text-blue-600 dark:text-blue-400 font-medium">WAP</td>
+                                <td class="px-4 py-3 text-sm text-green-600 dark:text-green-400 font-medium">$638</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                                <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">CUNGCUNGPRUT</td>
+                                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">iMonetizeit</td>
+                                <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">Australia</td>
+                                <td class="px-4 py-3 text-sm text-blue-600 dark:text-blue-400 font-medium">WAP</td>
+                                <td class="px-4 py-3 text-sm text-green-600 dark:text-green-400 font-medium">$466</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script untuk pengecekan autentikasi -->
+    <script src="./js/auth-check.js"></script>
+    <script src="./js/leads.js"></script>
+    <script>
+        // Handle lead form submission
+        document.getElementById('leadForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const leadData = {
+                clicks: parseInt(document.getElementById('clicks')?.value || '1'),
+                converted: document.getElementById('converted')?.checked || false,
+                value: parseFloat(document.getElementById('value')?.value || '0')
+            };
+            addNewLead(leadData);
+            
+            // Reset form after submission
+            this.reset();
+            alert('Lead data submitted successfully!');
+        });
+        // Dark Mode Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        // Initialize theme
+        const currentTheme = localStorage.getItem('theme') || 
+                         (prefersDarkScheme.matches ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', currentTheme === 'dark');
+        updateThemeIcon(currentTheme);
+
+        // Theme toggle handler
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcon(isDark ? 'dark' : 'light');
+        });
+
+        function updateThemeIcon(theme) {
+            themeToggle.innerHTML = theme === 'dark' ? `
+                <i class="fas fa-sun w-6 text-center text-yellow-400"></i>
+                <span>Light Mode</span>
+            ` : `
+                <i class="fas fa-moon w-6 text-center text-gray-600"></i>
+                <span>Dark Mode</span>
+            `;
+        }
+    </script>
+</body>
+</html>
