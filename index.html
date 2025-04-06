@@ -1,144 +1,315 @@
+<?php
+include('config.php');
+include('function.php');
+include('countrycodes.php');
+
+// Add modern styling resources
+echo <<<HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Earnings Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        dark: {
-                            800: '#1e293b',
-                            900: '#0f172a'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/dashboard.css">
-    <link rel="stylesheet" href="/css/components.css">
-    <link rel="stylesheet" href="/css/sidebar.css">
+    <link rel="stylesheet" href="flag-icon.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .network-badge {
+            @apply px-2 py-1 rounded text-xs font-semibold;
+        }
+        .table-row:hover {
+            @apply bg-blue-50;
+        }
+    </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900">
-    <!-- Mobile Toggle Button -->
-    <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-white dark:bg-gray-800 shadow-lg">
-        <i class="fas fa-bars"></i>
-    </button>
+<body class="min-h-screen">
+HTML;
 
-    <!-- Sidebar -->
-    <div class="sidebar fixed top-0 left-0 w-64 h-screen transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-40 overflow-y-auto">
-        <div class="p-6 border-b border-opacity-20">
-            <h1 class="text-2xl font-bold flex items-center gap-3">
-                <i class="fas fa-chart-line text-white"></i>
-                <span>CUNGCUNGPRUT TEAM</span>
-            </h1>
-            <p class="text-sm text-black text-opacity-80 mt-1">Stay in bed and feel relaxed📢</p>
+
+
+date_default_timezone_set('UTC');
+
+define('GX_PATH', realpath(__DIR__.'/'));
+define('GX_LIB', GX_PATH.'/lib/');
+
+require 'autoload.php';
+$page = 'index';
+
+// Modern header replacement
+echo <<<HTML
+<header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fas fa-chart-line text-2xl"></i>
+                <h1 class="text-2xl font-bold">Earnings Dashboard</h1>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <a href="index.php" class="hover:text-blue-200 transition duration-200">
+                    <i class="fas fa-home mr-1"></i> Home
+                </a>
+                <a href="statistics.php" class="hover:text-blue-200 transition duration-200">
+                    <i class="fas fa-chart-pie mr-1"></i> Statistics
+                </a>
+            </nav>
         </div>
-        <nav class="p-4 space-y-1">
-            <a href="index.html" class="flex items-center gap-4 p-3 rounded-lg hover:bg-opacity-10 hover:bg-white">
-                <div class="w-8 h-8 flex items-center justify-center bg-white bg-opacity-10 rounded-lg">
-                    <i class="fas fa-home"></i>
+    </div>
+</header>
+HTML;
+if(isset($_POST['loginpass']) && $_POST['password'] != "") {
+    if($_POST['password'] == $passWd) {
+        $_SESSION['loggedIn'] = true;
+    } else {
+        echo <<<HTML
+        <div class="fixed top-4 right-4 z-50">
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 shadow-lg rounded-lg">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span>Password Salah!</span>
                 </div>
-                <span>Dashboard</span>
-            </a>
-            <a href="conversion.html" class="flex items-center gap-4 p-3 rounded-lg hover:bg-opacity-10 hover:bg-white">
-                <div class="w-8 h-8 flex items-center justify-center bg-white bg-opacity-10 rounded-lg">
-                    <i class="fas fa-exchange-alt"></i>
-                </div>
-                <span>Conversion</span>
-            </a>
-            <a href="performance.html" class="flex items-center gap-4 p-3 rounded-lg hover:bg-opacity-10 hover:bg-white">
-                <div class="w-8 h-8 flex items-center justify-center bg-white bg-opacity-10 rounded-lg">
-                    <i class="fas fa-tachometer-alt"></i>
-                </div>
-                <span>Performance</span>
-            </a>
-            <div class="mt-8 border-t border-opacity-20 pt-4 space-y-2">
-                <button id="themeToggle" class="w-full flex items-center gap-4 p-3 rounded-lg hover:bg-opacity-10 hover:bg-white">
-                    <div class="w-8 h-8 flex items-center justify-center bg-white bg-opacity-10 rounded-lg">
-                        <i class="fas fa-moon"></i>
+            </div>
+        </div>
+HTML;
+    }
+} 
+
+if(!isset($_SESSION['loggedIn'])) {
+    echo <<<HTML
+    <div class="flex items-center justify-center min-h-screen bg-gray-50">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+            <div class="text-center">
+                <h2 class="text-3xl font-extrabold text-gray-900">
+                    Welcome Back
+                </h2>
+                <p class="mt-2 text-gray-600">
+                    Please enter your password to access the dashboard
+                </p>
+            </div>
+            <form class="mt-8 space-y-6" action="" method="post">
+                <div class="rounded-md shadow-sm space-y-4">
+                    <div>
+                        <label for="password" class="sr-only">Password</label>
+                        <input id="password" name="password" type="password" required 
+                            class="appearance-none relative block w-full px-4 py-3 border border-gray-300 
+                            placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
+                            focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="Enter your password">
                     </div>
-                    <span>Dark Mode</span>
-                </button>
-                <a href="login.html" class="w-full flex items-center gap-4 p-3 rounded-lg hover:bg-opacity-10 hover:bg-white">
-                    <div class="w-8 h-8 flex items-center justify-center bg-white bg-opacity-10 rounded-lg">
-                        <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <div>
+                    <button type="submit" name="loginpass"
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent 
+                        text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                        transition duration-200">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        Sign in
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+HTML;
+} else {
+new Db();
+
+if(isset($_GET['date'])) {
+    if($_GET['date'] == 'today') {
+        $date = date('Y-m-d');
+    } elseif($_GET['date'] == 'yesterday') {
+        $date = date('Y-m-d', strtotime("yesterday"));
+    }
+} else {
+    $date = date('Y-m-d');
+}
+
+$topEarning = ""; //topEarning($date);
+$r = Db::result("SELECT * FROM `conversions` WHERE `date` LIKE '%{$date}%' ORDER BY `id` DESC ");
+
+echo <<<HTML
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl shadow-md overflow-hidden mb-8">
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Conversion Data</h2>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div class="relative">
+                        <input type="text" id="search" placeholder="Search..." autocomplete="off"
+                            class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 
+                            focus:ring-blue-500 focus:border-blue-500 w-full">
+                        <div class="absolute left-3 top-2.5 text-gray-400">
+                            <i class="fas fa-search"></i>
+                        </div>
                     </div>
-                    <span>Logout</span>
+                    <select name="select_date" id="select_date"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 
+                        focus:ring-blue-500 focus:border-blue-500">
+                        <option selected disabled value="0">Select date</option>
+                        <option value="today">Today</option>
+                        <option value="yesterday">Yesterday</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table id="myTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Network</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Traffic</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+HTML;
+$lastipq = Db::result("SELECT `id` FROM `hitstat` ORDER BY `id` DESC LIMIT 1");
+$lastip_id = (Db::$num_rows > 0) ? $lastipq[0]->id : 0;
+$lastq = Db::result("SELECT `id` FROM `conversions` ORDER BY `id` DESC LIMIT 1");
+$last_id = $lastq[0]->id;
+$totalEarning = 0;
+
+if (!isset($r['error'])) {
+    $total = 0;
+    $n = 0;
+    
+    foreach($r as $k => $v) {
+        $n = $n + 1;
+        $payout = number_format($v->payout, 2);
+        $total = $payout + $total;
+        $country = strtolower($v->country);
+        
+        // Device icons with Font Awesome
+        if($v->os == "web" || $v->os == "desktop" || $v->os == "Windows") {
+            $os = "<i class='fas fa-laptop text-blue-600 text-lg'></i>";
+        } elseif($v->os == "WAP" || $v->os == "android" || $v->os == "Android" || $v->os == "ios" || $v->os == "iOS") {
+            $os = "<i class='fas fa-mobile-alt text-green-600 text-lg'></i>";
+        } elseif($v->os == "tablet") {
+            $os = "<i class='fas fa-tablet-alt text-purple-600 text-lg'></i>";
+        }
+        
+        // User icon with crown for top earner
+        if($topEarning == $v->subid) {
+            $usericon = "<i class='fas fa-crown text-yellow-500 mr-1'></i>";
+        } else {
+            $usericon = "<i class='fas fa-user-circle text-gray-500 mr-1'></i>";
+        }
+
+        // Network badges with Tailwind classes
+        $networkClasses = [
+            "imonetizeit" => "bg-green-100 text-green-800",
+            "adverten" => "bg-red-100 text-red-800",
+            "lospollos" => "bg-yellow-100 text-yellow-800",
+            "clickdealer" => "bg-blue-100 text-blue-800",
+            "datify" => "bg-purple-100 text-purple-800"
+        ];
+        
+        $networkClass = $networkClasses[$v->network] ?? "bg-gray-100 text-gray-800";
+        $network = "<span class='network-badge $networkClass'>{$v->network}</span>";
+        
+        echo <<<HTML
+                        <tr class="table-row">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{$n}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                <a href="statsID.php?id={$v->subid}" class="hover:text-blue-800 transition duration-150">
+                                    {$usericon}{$v->subid}
+                                </a>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {$network}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                {$os}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                <span class="flag-icon flag-icon-{$country} mr-1"></span>
+                                <span class="font-medium">".strtoupper($country)."</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold text-green-600">
+                                \${$payout}
+                            </td>
+                        </tr>
+HTML;
+    }
+    $totalEarning = number_format($total, 2, '.', ',');
+}
+
+echo <<<HTML
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-200">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-chart-bar text-blue-600"></i>
+                    <span class="text-sm text-gray-600">Last update: ".date('H:i:s')."</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-lg font-semibold text-gray-700">Total Earnings:</span>
+                    <span class="text-2xl font-bold text-green-600" id="totalearning">\${$totalEarning}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" id="last_id" value="{$last_id}">
+    <input type="hidden" id="lastip_id" value="{$lastip_id}">
+    <audio id="ding" src="audio/dingdong.wav" type="audio/wav" allow="autoplay"></audio>
+HTML;
+}
+
+// Modern footer replacement
+echo <<<HTML
+<footer class="bg-gray-800 text-white py-6 mt-12">
+    <div class="container mx-auto px-4">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+            <div class="mb-4 md:mb-0">
+                <p class="text-gray-400">&copy; " . date('Y') . " Earnings Dashboard. All rights reserved.</p>
+            </div>
+            <div class="flex space-x-4">
+                <a href="#" class="text-gray-400 hover:text-white transition duration-200">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-white transition duration-200">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="#" class="text-gray-400 hover:text-white transition duration-200">
+                    <i class="fab fa-instagram"></i>
                 </a>
             </div>
-        </nav>
-    </div>
-
-    <div class="main-content ml-0 md:ml-64 transition-all duration-300">
-        <div class="p-6">
-            <h2 class="text-xl font-bold mb-4 dark:text-white">Dashboard Overview</h2>
-            
-            <!-- Enhanced Cards Section -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Total Leads Card -->
-                <div class="dashboard-card bg-white dark:bg-gray-800">
-                    <div class="card-header">
-                        <h3 class="card-title">Total Leads</h3>
-                        <div class="card-icon">
-                            <i class="fas fa-users"></i>
-                        </div>
-                    </div>
-                    <p class="card-value dark:text-white" id="totalLeads">
-                        <span class="skeleton inline-block h-8 w-16"></span>
-                    </p>
-                    <div class="card-growth text-green-500">
-                        <i class="fas fa-circle-notch fa-spin mr-1"></i>
-                        <span id="leadsGrowth" class="skeleton inline-block h-4 w-24"></span>
-                    </div>
-                </div>
-
-                <!-- Revenue Card -->
-                <div class="dashboard-card bg-white dark:bg-gray-800">
-                    <div class="card-header">
-                        <h3 class="card-title">Revenue</h3>
-                        <div class="card-icon" style="background: rgba(16,185,129,0.1);">
-                            <i class="fas fa-dollar-sign text-green-500"></i>
-                        </div>
-                    </div>
-                    <p class="card-value dark:text-white" id="totalRevenue">
-                        <span class="skeleton inline-block h-8 w-16"></span>
-                    </p>
-                    <div class="card-growth text-green-500">
-                        <i class="fas fa-circle-notch fa-spin mr-1"></i>
-                        <span id="revenueGrowth" class="skeleton inline-block h-4 w-24"></span>
-                    </div>
-                </div>
-
-                <!-- Conversion Rate Card -->
-                <div class="dashboard-card bg-white dark:bg-gray-800">
-                    <div class="card-header">
-                        <h3 class="card-title">Conversion Rate</h3>
-                        <div class="card-icon" style="background: rgba(139,92,246,0.1);">
-                            <i class="fas fa-exchange-alt text-purple-500"></i>
-                        </div>
-                    </div>
-                    <p class="card-value dark:text-white" id="conversionRate">
-                        <span class="skeleton inline-block h-8 w-16"></span>
-                    </p>
-                    <div class="card-growth text-green-500">
-                        <i class="fas fa-circle-notch fa-spin mr-1"></i>
-                        <span id="conversionGrowth" class="skeleton inline-block h-4 w-24"></span>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
+</footer>
 
-    <script src="/js/auth-check.js"></script>
-    <script src="/js/lead-new.js"></script>
-    <script src="/js/leads.js"></script>
-    <script src="/js/sidebar.js"></script>
+<script>
+    // Simple animation for total earnings
+    document.addEventListener('DOMContentLoaded', function() {
+        const totalEarning = document.getElementById('totalearning');
+        if(totalEarning) {
+            totalEarning.style.transition = 'all 0.5s ease';
+            setInterval(() => {
+                totalEarning.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    totalEarning.style.transform = 'scale(1)';
+                }, 500);
+            }, 3000);
+        }
+    });
+</script>
 </body>
 </html>
+HTML;
