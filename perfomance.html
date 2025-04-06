@@ -1,297 +1,244 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Performance | LeadReport</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Tambahkan library untuk datepicker -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="./css/components.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <style>
-        .sidebar {
-            width: 250px;
-            transition: all 0.3s;
-            height: 100vh;
-            position: fixed;
-            z-index: 50;
-        }
-        .main-content {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-        }
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                width: 280px;
-            }
-            .main-content {
-                margin-left: 0;
-                width: 100%;
-            }
-        }
-    </style>
-</head>
-<body class="bg-gray-50 dark:bg-gray-900">
-    <!-- Sidebar -->
-    <div class="sidebar bg-white dark:bg-gray-800 shadow-lg">
-        <div class="p-4 border-b dark:border-gray-700">
-            <h1 class="text-xl font-bold flex items-center gap-2 dark:text-white">
-                <i class="fas fa-chart-line text-blue-600"></i>
-                <span>LeadReport</span>
-            </h1>
-        </div>
-        <nav class="p-2">
-            <a href="index.html" class="nav-item flex items-center gap-3 p-3 rounded-lg dark:text-gray-300 dark:hover:bg-gray-700">
-                <i class="fas fa-home w-6 text-center"></i>
-                <span>Dashboard</span>
-            </a>
-            <div class="mt-auto border-t dark:border-gray-700 pt-2 space-y-1">
-                <button id="performanceBtn" class="w-full flex items-center gap-3 p-3 rounded-lg text-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                    <i class="fas fa-tachometer-alt w-6 text-center text-green-500"></i>
-                    <span>Performance</span>
-                </button>
+<?php
+include('config.php');
+include('countrycodes.php');
+
+date_default_timezone_set('Asia/Jakarta');
+
+define('GX_PATH', realpath(__DIR__.'/'));
+define('GX_LIB', GX_PATH.'/lib/');
+
+require 'autoload.php';
+
+// Add modern styling resources
+echo '<link href="https://cdn.tailwindcss.com" rel="stylesheet">';
+echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">';
+echo '<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
+
+$data = [];
+$page = "statistics";
+
+if( isset($_GET['date']) && $_GET['date'] != "" ) {
+    
+    if( $_GET['date'] == "yesterday") {
+        $data['from'] = strtotime("yesterday");
+        $data['to'] = strtotime("yesterday");
+    } if( $_GET['date'] == "today") { 
+        $data['from'] = strtotime("today");
+        $data['to'] = strtotime(date('Y-m-d H:i:s'));
+    }
+} else {
+    $data['from'] = isset($_GET['from']) && $_GET['from'] != "" ? strtotime($_GET['from']): strtotime("today");
+    $data['to'] = isset($_GET['to']) && $_GET['to'] != "" ? strtotime($_GET['to']): strtotime(date('Y-m-d H:i:s'));
+}
+
+$data['last'] = array(
+    'from' => $data['from'],
+    'to' => $data['to']
+);
+
+include('header.php');
+
+if( isset($_POST['loginpass']) && $_POST['password'] != "" ) {
+    if($_POST['password'] == $passWd) {
+        $_SESSION['loggedIn'] = true;
+    } else {
+        echo "<div class='container'><div class='alert alert-danger'>Password Salah!!</div></div>";
+    }
+    
+} 
+if( !isset($_SESSION['loggedIn']) ) {
+    echo "
+    <div class='min-h-screen bg-gray-50 flex items-center justify-center px-4'>
+        <div class='max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg'>
+            <div class='text-center'>
+                <h2 class='text-3xl font-extrabold text-gray-900'>Login Report</h2>
+                <p class='mt-2 text-sm text-gray-600'>Masukkan password untuk melihat report</p>
             </div>
-        </nav>
-    </div>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="p-6">
-            <div class="flex items-center gap-4 mb-4">
-                <button onclick="window.history.back()" 
-                        class="back-button flex items-center gap-2 px-3 py-1 rounded-lg text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
-                    <i class="fas fa-arrow-left"></i>
-                    <span>Back</span>
-                </button>
-                <h2 class="text-xl font-bold dark:text-white">Performance Network</h2>
-            </div>
-            
-            <!-- Enhanced Performance Table -->
-            <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-gray-700 overflow-hidden">
-                <div class="p-4 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Performance Details</h3>
-                    <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-                        <div class="relative">
-                            <input type="text" id="datePicker" class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full" placeholder="Select Date">
-                            <i class="fas fa-calendar absolute left-3 top-3 text-gray-500 dark:text-gray-400"></i>
-                        </div>
-                        <div class="relative">
-                            <input type="text" id="searchInput" class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full" placeholder="Search...">
-                            <i class="fas fa-search absolute left-3 top-3 text-gray-500 dark:text-gray-400"></i>
-                        </div>
+            <form class='mt-8 space-y-6' action='' method='post'>
+                <div class='rounded-md shadow-sm space-y-4'>
+                    <div>
+                        <input type='password' name='password' required 
+                            class='appearance-none relative block w-full px-3 py-3 border border-gray-300 
+                            placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none 
+                            focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm'
+                            placeholder='Password'>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full" aria-labelledby="performance-table-heading">
-                        <thead class="bg-gray-50 dark:bg-gray-700">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" onclick="sortTable(0)">
-                                    <div class="flex items-center">
-                                        ID
-                                        <svg id="sort-id" class="ml-1 h-3 w-3 opacity-0 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-                                        </svg>
-                                    </div>
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" onclick="sortTable(1)">
-                                    <div class="flex items-center">
-                                        VISIT
-                                        <svg id="sort-visit" class="ml-1 h-3 w-3 opacity-0 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-                                        </svg>
-                                    </div>
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" onclick="sortTable(2)">
-                                    <div class="flex items-center">
-                                        LEAD
-                                        <svg id="sort-lead" class="ml-1 h-3 w-3 opacity-0 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-                                        </svg>
-                                    </div>
-                                </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" onclick="sortTable(3)">
-                                    <div class="flex items-center">
-                                        EARNING
-                                        <svg id="sort-earning" class="ml-1 h-3 w-3 opacity-0 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-                                        </svg>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700" id="tableBody">
-                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                            PRF001
-                                        </span>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="text-sm font-medium text-gray-900 dark:text-white">1,250</div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="text-sm font-medium text-gray-900 dark:text-white">325</div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex flex-col">
-                                        <div class="flex items-center text-green-600 dark:text-green-400">
-                                            <i class="fas fa-dollar-sign mr-1 text-xs"></i>
-                                            <span class="font-medium">1,250</span>
-                                        </div>
-                                        <div class="w-full bg-gray-200 rounded-full dark:bg-gray-700 h-1 mt-1">
-                                            <div class="h-1 rounded-full bg-green-500" style="width: 75%"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div>
+                    <button type='submit' name='loginpass'
+                        class='group relative w-full flex justify-center py-3 px-4 border border-transparent 
+                        text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+                        transition duration-150 ease-in-out'>
+                        <span class='absolute left-0 inset-y-0 flex items-center pl-3'>
+                            <i class='fas fa-lock'></i>
+                        </span>
+                        Login
+                    </button>
                 </div>
-                <!-- Enhanced Pagination -->
-                <div class="flex flex-col sm:flex-row items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-                    <div class="mb-2 sm:mb-0 text-sm text-gray-700 dark:text-gray-300">
-                        Showing <span class="font-medium">1</span> to <span class="font-medium">1</span> of <span class="font-medium">1</span> entries
-                    </div>
-                    <div class="flex items-center space-x-1">
-                        <button class="px-3 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50" disabled>
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button class="px-3 py-1 rounded-md bg-blue-500 text-white hover:bg-blue-600">
-                            1
-                        </button>
-                        <button class="px-3 py-1 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
-                    </div>
-                    <div class="mt-2 sm:mt-0 flex items-center text-sm text-gray-500 dark:text-gray-400">
-                        <span class="mr-2">Rows per page:</span>
-                        <select class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-sm">
-                            <option>5</option>
-                            <option selected>10</option>
-                            <option>25</option>
-                            <option>50</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <!-- Earnings Summary -->
-                <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-t border-gray-200 dark:border-gray-600">
-                    <div class="grid grid-cols-4 gap-4">
-                        <div class="col-span-1"></div>
-                        <div class="col-span-1"></div>
-                        <div class="col-span-1 text-right">
-                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Earnings:</span>
-                            <span id="totalEarnings" class="ml-2 text-sm font-semibold text-green-600 dark:text-green-400">$1,250</span>
-                        </div>
-                        <div class="col-span-1 text-right">
-                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Avg Earnings:</span>
-                            <span id="avgEarnings" class="ml-2 text-sm font-semibold text-blue-600 dark:text-blue-400">$1,250</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Script untuk tabel -->
-            <script src="./js/auth-check.js"></script>
-            <script src="./js/leads.js"></script>
-            <script>
-                // Sorting functionality
-                function sortTable(columnIndex) {
-                    const table = document.getElementById('performance-table');
-                    const tbody = table.querySelector('tbody');
-                    const rows = Array.from(tbody.querySelectorAll('tr'));
-                    const sortIcon = document.getElementById(`sort-${['id','visit','lead','earning','status'][columnIndex]}`);
-                    
-                    // Toggle sort direction
-                    const isAscending = sortIcon.classList.toggle('rotate-180');
-                    sortIcon.classList.toggle('opacity-0', false);
-                    
-                    // Sort rows
-                    rows.sort((a, b) => {
-                        const aValue = a.cells[columnIndex].textContent.trim();
-                        const bValue = b.cells[columnIndex].textContent.trim();
-                        
-                        if (columnIndex === 3) { // Earning column (numeric)
-                            return isAscending 
-                                ? parseFloat(aValue) - parseFloat(bValue)
-                                : parseFloat(bValue) - parseFloat(aValue);
-                        } else { // Other columns (text)
-                            return isAscending 
-                                ? aValue.localeCompare(bValue)
-                                : bValue.localeCompare(aValue);
-                        }
-                    });
-
-                    // Re-append sorted rows
-                    rows.forEach(row => tbody.appendChild(row));
-                }
-
-                // Search functionality
-                document.getElementById('searchInput').addEventListener('input', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    const rows = document.querySelectorAll('#tableBody tr');
-                    
-                    rows.forEach(row => {
-                        const rowText = row.textContent.toLowerCase();
-                        row.style.display = rowText.includes(searchTerm) ? '' : 'none';
-                    });
-                });
-
-                // Initialize datepicker
-                flatpickr("#datePicker", {
-                    dateFormat: "Y-m-d",
-                    mode: "range",
-                    onClose: function(selectedDates) {
-                        // Filter table by date range
-                        const rows = document.querySelectorAll('#tableBody tr');
-                        const [startDate, endDate] = selectedDates.map(d => d.toISOString().split('T')[0]);
-                        
-                        rows.forEach(row => {
-                            const rowDate = row.cells[0].textContent.trim();
-                            const showRow = (!startDate || rowDate >= startDate) && 
-                                          (!endDate || rowDate <= endDate);
-                            row.style.display = showRow ? '' : 'none';
-                        });
-                    }
-                });
-
-                // Dark Mode Toggle
-                const themeToggle = document.getElementById('themeToggle');
-                const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-                
-                // Initialize theme
-                const currentTheme = localStorage.getItem('theme') || 
-                                 (prefersDarkScheme.matches ? 'dark' : 'light');
-                document.documentElement.classList.toggle('dark', currentTheme === 'dark');
-                updateThemeIcon(currentTheme);
-
-                // Theme toggle handler
-                themeToggle.addEventListener('click', () => {
-                    const isDark = document.documentElement.classList.toggle('dark');
-                    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                    updateThemeIcon(isDark ? 'dark' : 'light');
-                });
-
-                function updateThemeIcon(theme) {
-                    themeToggle.innerHTML = theme === 'dark' ? `
-                        <i class="fas fa-sun w-6 text-center text-yellow-400"></i>
-                        <span>Light Mode</span>
-                    ` : `
-                        <i class="fas fa-moon w-6 text-center text-gray-600"></i>
-                        <span>Dark Mode</span>
-                    `;
-                }
-            </script>
+            </form>
         </div>
     </div>
-</body>
-</html>
+    ";
+} else {
+    new Db();
+
+    echo "<div class='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+        <div class='bg-white shadow rounded-lg p-6 mb-8'>
+            <div class='flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6'>
+                <div>
+                    <h2 class='text-2xl font-bold text-gray-800'>Performance Report</h2>
+                    <p class='text-gray-600'>".date("d M Y", $data['from'])." - ".date("d M Y", $data['to'])."</p>
+                </div>
+                <form action='' method='get' class='flex flex-col sm:flex-row gap-2'>
+                    <div class='flex items-center gap-2'>
+                        <input name='from' type='date' 
+                            class='px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500'
+                            autocomplete='off'>
+                        <span class='text-gray-500'>to</span>
+                        <input name='to' type='date' 
+                            class='px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500'
+                            autocomplete='off'>
+                    </div>
+                    <button type='submit' 
+                        class='px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors'>
+                        Filter
+                    </button>
+                </form>
+            </div>
+
+            <div class='flex flex-col md:flex-row gap-4 mb-6'>
+                <div class='relative flex-grow'>
+                    <div class='absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none'>
+                        <i class='fas fa-search text-gray-400'></i>
+                    </div>
+                    <input type='text' id='search' placeholder='Search...' 
+                        class='pl-10 w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500'>
+                </div>
+                <select id='select_date' 
+                    class='px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500'>
+                    <option selected disabled value='0'>Select date</option>
+                    <option value='today'>Today</option>
+                    <option value='yesterday'>Yesterday</option>
+                </select>
+            </div>
+    
+    <div class='overflow-x-auto rounded-lg border border-gray-200 shadow-sm'>
+    <table id='myTable' class='min-w-full divide-y divide-gray-200'>
+        <thead class='bg-gray-50'>
+        <tr>
+            <th scope='col' class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>ID</th>
+            <th scope='col' class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Network</th>
+            <th scope='col' class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Hits</th>
+            <th scope='col' class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Uniques</th>
+            <th scope='col' class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Clicks</th>
+            <th scope='col' class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Conv.</th>
+            <th scope='col' class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>CR</th>
+            <th scope='col' class='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Earnings</th>
+        </tr>
+        </thead>
+        <tbody>";
+        $where = '';
+        if ($data['from'] != "") {
+            $where .= "AND `date` >= '".date('Y-m-d', $data['from']) ."' ";
+        }
+        if ($data['to'] != "") {
+            $where .= "AND `date` <= '" . date('Y-m-d', $data['to']) . "' ";
+        }
+    // select distinct ID
+    $q = Db::result("SELECT DISTINCT `name` FROM `link_report`");
+
+if (!isset($q['error'])) {
+    foreach($q as $k => $v) {
+        $q2 = Db::result("SELECT SUM(`hits`) as `totalHits`,
+        SUM(`uniques`) as  totalUniques,
+        SUM(`clicks`) as  totalClicks,
+        SUM(`conversions`) as  totalConversion,
+        `cr` as  totalCr,
+        SUM(`earnings`) as  totalEarning,
+        `network`
+        FROM `link_report` WHERE `name` = '{$v->name}' {$where} ");
+        $cr = ($q2[0]->totalEarning != 0 ) ? "1/".ceil($q2[0]->totalClicks/$q2[0]->totalConversion): 0;
+        if($q2[0]->totalHits) {
+            echo "
+        <tr class='hover:bg-gray-50 transition-colors'>
+            <td class='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'><strong>{$v->name}</strong></td>
+            <td class='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{$q2[0]->network}</td>
+            <td class='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{$q2[0]->totalHits}</td>
+            <td class='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{$q2[0]->totalUniques}</td>
+            <td class='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{$q2[0]->totalClicks}</td>
+            <td class='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{$q2[0]->totalConversion}</td>
+            <td class='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>{$cr}</td>
+            <td class='px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600'>".number_format($q2[0]->totalEarning, 2)."</td>
+        </tr>";
+        }
+    }
+} else {
+    echo "<tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+</tr>";
+}
+
+    echo "</tbody>
+        <tfoot>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tfoot>
+        </tbody>
+        </table></div>";
+
+        echo "
+        </div>
+        
+        <!-- Modal -->
+        <div class=\"modal fade\" id=\"myModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\">
+        <div class=\"modal-dialog\" role=\"document\">
+            <div class=\"modal-content\">
+            <div class=\"modal-header\">
+                <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button>
+                <h4 class=\"modal-title\" id=\"myModalLabel\">Upload</h4>
+            </div>
+            <div class=\"modal-body\">
+                <form action='' method='post' enctype='multipart/form-data'>
+                <div class=\"form-group\">
+                    <label>Tanggal</label>
+                    <input type=\"text\" class=\"form-control date\" name='date' data-date-format=\"yyyy-mm-dd\" autocomplete=\"off\">
+                </div>
+                <div class=\"form-group\">
+                    <label>Upload CSV</label>
+                    <div class=\"input-group\" >
+                    <input type=\"file\" class=\"form-control\" name='fileCSV'>
+                    <div class=\"input-group-btn\">
+                        <button class=\"btn btn-success\" type=\"submit\" name='uploadCSV'>
+                        Upload CSV
+                        </button>
+                    </div>
+                    </div>
+                </div>
+                </form>
+            </div>
+            <div class=\"modal-footer\">
+                <button type=\"button\" class=\"btn btn-danger\" data-dismiss=\"modal\">Close</button>
+            </div>
+            </div>
+        </div>
+        </div>
+        
+        ";
+}
+include('footer.php');
